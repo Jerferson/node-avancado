@@ -5,9 +5,11 @@ import { AuthenticationError } from '@/domain/errors'
 class LoadFacebookUserApiSpy implements LoadFacebookUserApi {
   token?: string
   result = undefined
+  callsCount: number = 0
 
   async loadUser (params: LoadFacebookUserApi.Params): Promise<LoadFacebookUserApi.Result> {
     this.token = params.token
+    this.callsCount++
     return this.result
   }
 }
@@ -20,6 +22,7 @@ describe('FacebookAuthenticationService', () => {
     await sut.perform({ token: 'any_token' })
 
     expect(loadFacebookUserApi.token).toBe('any_token')
+    expect(loadFacebookUserApi.callsCount).toBe(1)
   })
 
   it('shoul returns AuthenticationError when LoadFacebookUserApi returns undefined', async () => {
