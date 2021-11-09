@@ -35,4 +35,13 @@ describe('JwtTokenGenerator', () => {
 
     expect(token).toBe(anyToken)
   })
+
+  it('should rethrows if sign throws', async () => {
+    const errorMessage = faker.random.word()
+    fakeJwt.sign.mockImplementationOnce(() => { throw new Error(errorMessage) })
+
+    const promise = sut.generateToken({ key, expirationInMs: 1000 })
+
+    await expect(promise).rejects.toThrowError(errorMessage)
+  })
 })
