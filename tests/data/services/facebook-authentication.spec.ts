@@ -12,36 +12,49 @@ import faker from 'faker'
 jest.mock('@/domain/models/facebook-account')
 
 describe('FacebookAuthenticationService', () => {
-  const token = faker.datatype.uuid()
-  const userId = faker.datatype.uuid()
-  const fbId = faker.datatype.uuid()
-  const fbName = faker.name.findName()
-  const fbEmail = faker.internet.email()
-  const generatedToken = faker.datatype.uuid()
-
   let facebookApi: MockProxy<LoadFacebookUserApi>
   let crypto: MockProxy<TokenGenerator>
   let userAccountRepo: MockProxy<LoadUserAccountRepository & SaveFacebookAccountRepository>
   let sut: FacebookAuthenticationService
 
-  beforeEach(() => {
+  let token: string
+  let userId: string
+  let fbId: string
+  let fbName: string
+  let fbEmail: string
+  let generatedToken: string
+
+  beforeAll(() => {
+    token = faker.datatype.uuid()
+    userId = faker.datatype.uuid()
+    fbId = faker.datatype.uuid()
+    fbName = faker.name.findName()
+    fbEmail = faker.internet.email()
+    generatedToken = faker.datatype.uuid()
+
     facebookApi = mock()
     facebookApi.loadUser.mockResolvedValue({
       name: fbName,
       email: fbEmail,
       facebookId: fbId
     })
+
     userAccountRepo = mock()
     userAccountRepo.load.mockResolvedValue(undefined)
     userAccountRepo.saveWithFacebook.mockResolvedValue({ id: userId })
+
     crypto = mock()
     crypto.generateToken.mockResolvedValue(generatedToken)
+  })
+
+  beforeEach(() => {
     sut = new FacebookAuthenticationService(
       facebookApi,
       userAccountRepo,
       crypto
     )
   })
+
   it('shoul call LoadFacebookUserApi with correct params', async () => {
     await sut.perform({ token })
 
