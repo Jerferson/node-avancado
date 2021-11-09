@@ -17,6 +17,7 @@ describe('FacebookAuthenticationService', () => {
   const fbId = faker.datatype.uuid()
   const fbName = faker.name.findName()
   const fbEmail = faker.internet.email()
+  const generatedToken = faker.datatype.uuid()
 
   let facebookApi: MockProxy<LoadFacebookUserApi>
   let crypto: MockProxy<TokenGenerator>
@@ -25,7 +26,6 @@ describe('FacebookAuthenticationService', () => {
 
   beforeEach(() => {
     facebookApi = mock()
-    crypto = mock()
     facebookApi.loadUser.mockResolvedValue({
       name: fbName,
       email: fbEmail,
@@ -34,6 +34,8 @@ describe('FacebookAuthenticationService', () => {
     userAccountRepo = mock()
     userAccountRepo.load.mockResolvedValue(undefined)
     userAccountRepo.saveWithFacebook.mockResolvedValue({ id: userId })
+    crypto = mock()
+    crypto.generateToken.mockResolvedValue(generatedToken)
     sut = new FacebookAuthenticationService(
       facebookApi,
       userAccountRepo,
@@ -80,5 +82,11 @@ describe('FacebookAuthenticationService', () => {
       expirationInMs: AccessToken.expirationInMs
     })
     expect(crypto.generateToken).toHaveReturnedTimes(1)
+  })
+
+  it('shoul return an AccessToken on success', async () => {
+    const authResult = await sut.perform({ token })
+
+    expect(authResult).toEqual(new AccessToken(generatedToken))
   })
 })
