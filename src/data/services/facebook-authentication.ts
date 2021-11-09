@@ -1,16 +1,15 @@
-import {
-  SaveFacebookAccountRepository,
-  LoadUserAccountRepository
-} from '../contracts/repos'
+import { SaveFacebookAccountRepository, LoadUserAccountRepository } from '@/data/contracts/repos'
 import { LoadFacebookUserApi } from '@/data/contracts/apis'
-import { AuthenticationError } from '@/domain/errors'
+import { TokenGenerator } from '@/data/contracts/crypto'
 import { FacebookAuthentication } from '@/domain/features'
+import { AuthenticationError } from '@/domain/errors'
 import { FacebookAccount } from '@/domain/models'
 
 export class FacebookAuthenticationService {
   constructor (
     private readonly facebookUserApi: LoadFacebookUserApi,
-    private readonly userAccountRepo: LoadUserAccountRepository & SaveFacebookAccountRepository
+    private readonly userAccountRepo: LoadUserAccountRepository & SaveFacebookAccountRepository,
+    private readonly crypto: TokenGenerator
   ) { }
 
   async perform (params: FacebookAuthentication.Params): Promise<AuthenticationError> {
@@ -18,10 +17,10 @@ export class FacebookAuthenticationService {
     if (fbData === undefined) {
       return new AuthenticationError()
     }
-
     const accountData = await this.userAccountRepo.load({ email: fbData.email })
     const facebookAccount = new FacebookAccount(fbData, accountData)
-    await this.userAccountRepo.saveWithFacebook(facebookAccount)
+    const { id } = await this.userAccountRepo.saveWithFacebook(facebookAccount)
+    await this.crypto.generateToken({ key: id })
     return null as any
   }
 }
