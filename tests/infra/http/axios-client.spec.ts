@@ -38,5 +38,14 @@ describe('AxiosHttpClient', () => {
 
       expect(result).toEqual('any_data')
     })
+
+    it('should rethrow if get throws', async () => {
+      const errorMessage = faker.random.word()
+      fakeAxios.get.mockRejectedValueOnce(new Error(errorMessage))
+
+      const promise = sut.get({ url, params })
+
+      await expect(promise).rejects.toThrowError(errorMessage)
+    })
   })
 })
