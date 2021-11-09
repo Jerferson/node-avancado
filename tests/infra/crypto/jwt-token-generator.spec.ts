@@ -8,18 +8,31 @@ jest.mock('jsonwebtoken')
 describe('JwtTokenGenerator', () => {
   let sut: JwtTokenGenetator
   let fakeJwt: jest.Mocked<typeof jwt>
+  let anyToken: string
   let secrete: string
+  let key: string
+
+  beforeAll(() => {
+    anyToken = faker.datatype.uuid()
+    secrete = faker.datatype.uuid()
+    key = faker.random.word()
+    fakeJwt = jwt as jest.Mocked<typeof jwt>
+    fakeJwt.sign.mockImplementation(() => anyToken)
+  })
 
   beforeEach(() => {
-    secrete = faker.datatype.uuid()
     sut = new JwtTokenGenetator(secrete)
-    fakeJwt = jwt as jest.Mocked<typeof jwt>
   })
-  it('should call sign with correct params', async () => {
-    const key = faker.random.word()
 
+  it('should call sign with correct params', async () => {
     await sut.generateToken({ key, expirationInMs: 1000 })
 
     expect(fakeJwt.sign).toHaveBeenCalledWith({ key }, secrete, { expiresIn: 1 })
+  })
+
+  it('should return a token', async () => {
+    const token = await sut.generateToken({ key, expirationInMs: 1000 })
+
+    expect(token).toBe(anyToken)
   })
 })
