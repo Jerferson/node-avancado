@@ -4,8 +4,11 @@
   "description": "",
   "main": "reas.js",
   "scripts": {
-    "start": "node dist/main/api",
+    "start": "node ./dist/main",
     "build": "rimraf dist && tsc -p tsconfig-build.json",
+    "debug": "nodemon -L --watch ./dist --inspect=0.0.0.0:9222 --nolazy ./dist/main/index.js",
+    "up": "npm run build && docker-compose up -d",
+    "down": "docker-compose down",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "test": "jest --passWithNoTests --no-cache --runInBand",
